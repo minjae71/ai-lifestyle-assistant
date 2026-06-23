@@ -33,4 +33,14 @@ class ExpenseSettlementServiceTest {
         assertThat(result.warnings()).hasSize(1);
         assertThat(result.totalWon()).isEqualTo(20_000);
     }
+
+    @Test
+    void reportsOversizedAmountWithoutThrowing() {
+        var result = service.settle(
+                "민수, 영희",
+                "민수 999999999999999999999999999999999999");
+
+        assertThat(result.totalWon()).isZero();
+        assertThat(result.warnings()).anyMatch(message -> message.contains("금액"));
+    }
 }

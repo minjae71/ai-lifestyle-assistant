@@ -42,11 +42,12 @@ public class LifestyleAssistantTools {
     public MealResult suggestMeals(
             @ToolParam(description = "보유 재료. 쉼표 또는 줄바꿈으로 구분. 예: 계란, 밥, 김치", required = true)
             String ingredients,
-            @ToolParam(description = "허용 조리시간(분). 모르면 30", required = false)
-            int maxMinutes,
-            @ToolParam(description = "선호. 예: 매운맛, 담백한, 국물. 없으면 빈 문자열", required = false)
+            @ToolParam(description = "허용 조리시간(분). 생략하면 30분", required = false)
+            Integer maxMinutes,
+            @ToolParam(description = "선호. 예: 매운맛, 담백한, 국물. 없으면 생략", required = false)
             String preference) {
-        return mealService.suggest(ingredients, maxMinutes, preference);
+        int effectiveMaxMinutes = maxMinutes == null ? 30 : maxMinutes;
+        return mealService.suggest(ingredients, effectiveMaxMinutes, preference);
     }
 
     @Tool(
@@ -76,9 +77,9 @@ public class LifestyleAssistantTools {
             String eventType,
             @ToolParam(description = "상대와의 관계. 예: 회사 대리님, 친한 친구, 친척", required = true)
             String relationship,
-            @ToolParam(description = "직접 참석하면 true, 불참이면 false", required = false)
-            boolean attending) {
-        return lifeEventService.guide(eventType, relationship, attending);
+            @ToolParam(description = "직접 참석하면 true, 불참하거나 모르면 생략", required = false)
+            Boolean attending) {
+        return lifeEventService.guide(eventType, relationship, Boolean.TRUE.equals(attending));
     }
 
     @Tool(
@@ -93,7 +94,7 @@ public class LifestyleAssistantTools {
             String situation,
             @ToolParam(description = "받는 사람 또는 관계. 예: 팀장님, 친구", required = true)
             String recipient,
-            @ToolParam(description = "원하는 말투. 예: 정중한, 친근한, 간결한", required = false)
+            @ToolParam(description = "원하는 말투. 예: 정중한, 친근한, 간결한. 없으면 생략", required = false)
             String tone,
             @ToolParam(description = "반드시 포함할 핵심 내용", required = true)
             String keyPoints) {

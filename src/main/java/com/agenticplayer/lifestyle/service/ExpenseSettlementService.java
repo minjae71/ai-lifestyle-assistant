@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -22,6 +21,7 @@ public class ExpenseSettlementService {
 
     private static final Pattern EXPENSE_PATTERN = Pattern.compile(
             "^\\s*([^:=,\\d]+?)\\s*(?:[:=,]|\\s+)\\s*([\\d,]+)\\s*(?:원)?\\s*$");
+    private static final long MAX_EXPENSE_WON = 1_000_000_000_000L;
 
     public SettlementResult settle(String participantsText, String expenseLines) {
         Set<String> participants = parseParticipants(participantsText);
@@ -38,10 +38,21 @@ public class ExpenseSettlementService {
                     warnings.add("해석하지 못한 지출 내역: " + line.trim());
                     continue;
                 }
+
                 String name = matcher.group(1).trim();
-                long amount = Long.parseLong(matcher.group(2).replace(",", ""));
+                Long amount = parseAmount(matcher.group(2), line, warnings);
+                if (amount == null) {
+                    continue;
+                }
+
+                long current = paid.getOrDefault(name, 0L);
+                if (current > MAX_EXPENSE_WON - amount) {
+                    warnings.add("허용 범위를 초과한 누적 금액: " + line.trim());
+                    continue;
+                }
+
                 participants.add(name);
-                paid.merge(name, amount, Long::sum);
+                paid.put(name, current + amount);
             }
         }
 
@@ -67,6 +78,21 @@ public class ExpenseSettlementService {
                 shares,
                 transfers,
                 warnings);
+    }
+
+    private Long parseAmount(String amountText, String originalLine, List<String> warnings) {
+        String normalized = amountText.replace(",", "");
+        try {
+            long amount = Long.parseLong(normalized);
+            if (amount > MAX_EXPENSE_WON) {
+                warnings.add("허용 범위를 초과한 금액: " + originalLine.trim());
+                return null;
+            }
+            return amount;
+        } catch (NumberFormatException exception) {
+            warnings.add("숫자로 변환할 수 없는 금액: " + originalLine.trim());
+            return null;
+        }
     }
 
     private Set<String> parseParticipants(String text) {
