@@ -1,0 +1,47 @@
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: ai-lifestyle-assistant
+  ai:
+    mcp:
+      server:
+        name: ai-lifestyle-assistant
+        version: 0.1.0
+        instructions: >
+          LifeMate(라이프메이트)는 사용자의 일상 결정을 돕는 한국어 생활 비서입니다.
+          냉장고 재료 기반 식사 추천, 모임 비용 정산, 경조사 가이드,
+          상황별 메시지 초안을 제공합니다. 금융·의료·법률 전문가의 판단을
+          대신하지 않으며 사용자 개인정보를 저장하지 않습니다.
+        type: SYNC
+        protocol: STATELESS
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
+        tool-callback-converter: false
+        annotation-scanner:
+          enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.agenticplayer.lifestyle: INFO
