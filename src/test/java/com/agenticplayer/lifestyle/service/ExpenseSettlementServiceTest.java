@@ -18,6 +18,8 @@ class ExpenseSettlementServiceTest {
                 철수 10000
                 """);
 
+        assertThat(result.complete()).isTrue();
+        assertThat(result.summary()).contains("완료");
         assertThat(result.totalWon()).isEqualTo(60_000);
         assertThat(result.shareByPerson()).containsEntry("민수", 20_000L);
         assertThat(result.transfers()).hasSize(1);
@@ -30,8 +32,23 @@ class ExpenseSettlementServiceTest {
     void reportsLinesThatCannotBeParsed() {
         var result = service.settle("민수, 영희", "민수 20000\n누가 결제했는지 모름");
 
+        assertThat(result.complete()).isFalse();
+        assertThat(result.summary()).contains("확정할 수 없습니다");
         assertThat(result.warnings()).hasSize(1);
         assertThat(result.totalWon()).isEqualTo(20_000);
+        assertThat(result.shareByPerson()).isEmpty();
+        assertThat(result.transfers()).isEmpty();
+        assertThat(result.nextQuestions()).isNotEmpty();
+    }
+
+    @Test
+    void doesNotCreateTransfersWhenExpenseLineNeedsReview() {
+        var result = service.settle("민수, 영희", "민수 20000\n영희가 커피 샀음");
+
+        assertThat(result.complete()).isFalse();
+        assertThat(result.summary()).contains("송금 내역을 안내하기 전에");
+        assertThat(result.warnings()).anyMatch(message -> message.contains("영희가 커피 샀음"));
+        assertThat(result.transfers()).isEmpty();
     }
 
     @Test

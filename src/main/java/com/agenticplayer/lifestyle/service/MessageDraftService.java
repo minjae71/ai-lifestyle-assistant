@@ -27,8 +27,7 @@ public class MessageDraftService {
         List<String> alternatives = new ArrayList<>();
 
         if (containsAny(normalized, "연차", "휴가")) {
-            recommended = "안녕하세요. " + recipientWithSuffix + ", " + safePoints
-                    + ". 해당 일정에 연차 사용을 다시 요청드립니다. 업무 공백이 없도록 필요한 인수인계를 미리 준비하겠습니다. 검토 부탁드립니다.";
+            recommended = buildLeaveRequest(recipientWithSuffix, safePoints);
             alternatives.add("안녕하세요. 말씀드린 연차 일정과 관련해 다시 한번 가능 여부를 여쭙습니다. 일정 조정이 필요하다면 가능한 대안을 함께 맞추겠습니다.");
         } else if (containsAny(normalized, "사과", "미안", "실수")) {
             recommended = recipientWithSuffix + ", " + safePoints
@@ -65,6 +64,25 @@ public class MessageDraftService {
 
     private String addHonorific(String recipient) {
         return recipient.endsWith("님") ? recipient : recipient + "님";
+    }
+
+    private String buildLeaveRequest(String recipientWithSuffix, String safePoints) {
+        List<String> sentences = new ArrayList<>();
+        sentences.add("안녕하세요. " + recipientWithSuffix + ", " + safePoints);
+
+        if (!containsAny(safePoints, "연차", "휴가")) {
+            sentences.add("해당 일정에 연차 사용을 요청드립니다");
+        }
+        if (!containsAny(safePoints, "인수인계", "업무 공백", "업무공백")) {
+            sentences.add("업무 공백이 없도록 필요한 인수인계를 미리 준비하겠습니다");
+        }
+        sentences.add("검토 부탁드립니다");
+
+        return sentences.stream()
+                .map(this::trimSentenceEnding)
+                .reduce((left, right) -> left + ". " + right)
+                .orElse("검토 부탁드립니다")
+                + ".";
     }
 
     private String trimSentenceEnding(String value) {

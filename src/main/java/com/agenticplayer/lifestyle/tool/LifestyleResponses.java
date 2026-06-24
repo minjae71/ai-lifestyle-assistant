@@ -27,12 +27,15 @@ public final class LifestyleResponses {
     }
 
     public record SettlementResult(
+            boolean complete,
+            String summary,
             List<String> participants,
             long totalWon,
             Map<String, Long> paidByPerson,
             Map<String, Long> shareByPerson,
             List<Transfer> transfers,
-            List<String> warnings) {
+            List<String> warnings,
+            List<String> nextQuestions) {
     }
 
     public record LifeEventGuide(

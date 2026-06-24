@@ -57,27 +57,46 @@ public class ExpenseSettlementService {
         }
 
         if (participants.isEmpty()) {
-            return new SettlementResult(List.of(), 0, Map.of(), Map.of(), List.of(),
-                    List.of("참여자와 지출 내역을 확인할 수 없습니다."));
+            return new SettlementResult(
+                    false,
+                    "참여자와 지출 내역을 확인할 수 없어 정산을 확정할 수 없습니다.",
+                    List.of(),
+                    0,
+                    Map.of(),
+                    Map.of(),
+                    List.of(),
+                    List.of("참여자와 지출 내역을 확인할 수 없습니다."),
+                    List.of("참여자 이름과 각 결제자의 결제 금액을 알려주세요."));
         }
 
         List<String> orderedParticipants = new ArrayList<>(participants);
         orderedParticipants.forEach(name -> paid.putIfAbsent(name, 0L));
         long total = paid.values().stream().mapToLong(Long::longValue).sum();
-        Map<String, Long> shares = allocateShares(orderedParticipants, total);
-        List<Transfer> transfers = calculateTransfers(orderedParticipants, paid, shares);
 
         if (total == 0) {
             warnings.add("정산할 결제 금액이 0원입니다.");
         }
 
+        boolean complete = warnings.isEmpty();
+        Map<String, Long> shares = complete ? allocateShares(orderedParticipants, total) : Map.of();
+        List<Transfer> transfers = complete ? calculateTransfers(orderedParticipants, paid, shares) : List.of();
+        String summary = complete
+                ? "입력된 지출 내역으로 정산을 완료했습니다."
+                : "일부 지출 내역을 해석하지 못해 정산을 확정할 수 없습니다. 송금 내역을 안내하기 전에 누락된 금액을 먼저 확인해야 합니다.";
+        List<String> nextQuestions = complete
+                ? List.of()
+                : List.of("해석하지 못한 지출 내역의 결제자와 금액을 다시 알려주세요.");
+
         return new SettlementResult(
+                complete,
+                summary,
                 orderedParticipants,
                 total,
                 paid,
                 shares,
                 transfers,
-                warnings);
+                warnings,
+                nextQuestions);
     }
 
     private Long parseAmount(String amountText, String originalLine, List<String> warnings) {

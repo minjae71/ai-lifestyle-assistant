@@ -56,6 +56,8 @@ public class LifestyleAssistantTools {
                     LifeMate(라이프메이트)가 대화 형식으로 적힌 모임 지출을 동일 비율로 정산하고,
                     누가 누구에게 얼마를 보내야 하는지 간결한 송금 목록을 만듭니다.
                     '민수 20000, 영희 30000' 같은 모임 비용 정산 요청에 사용합니다.
+                    complete가 false이면 송금 내역을 확정하지 말고 summary와 nextQuestions를 바탕으로
+                    사용자가 빠진 금액을 보완하도록 질문해야 합니다.
                     """)
     public SettlementResult splitExpenses(
             @ToolParam(description = "전체 참여자 이름. 쉼표 또는 공백으로 구분. 예: 민수, 영희, 철수", required = true)
