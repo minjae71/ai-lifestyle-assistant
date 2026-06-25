@@ -85,4 +85,44 @@ public final class LifestyleResponses {
             int usAqi,
             String grade) {
     }
+
+    public record AirQualityCheck(
+            String locationName,
+            double latitude,
+            double longitude,
+            String activity,
+            AirQualitySnapshot airQuality,
+            String riskLevel,
+            String recommendation,
+            List<String> reasons,
+            List<String> checklist,
+            List<String> cautions,
+            List<String> sources) {
+    }
+
+    public record WeatherRiskCheck(
+            String locationName,
+            double latitude,
+            double longitude,
+            String activity,
+            WeatherSnapshot weather,
+            String riskLevel,
+            String recommendation,
+            List<String> reasons,
+            List<String> checklist,
+            List<String> cautions,
+            List<String> sources) {
+    }
+
+    public record OutdoorChecklist(
+            String locationName,
+            double latitude,
+            double longitude,
+            String activity,
+            String riskLevel,
+            List<String> checklist,
+            List<String> reasons,
+            String summary,
+            List<String> sources) {
+    }
 }

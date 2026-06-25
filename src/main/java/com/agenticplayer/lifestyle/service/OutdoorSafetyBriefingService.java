@@ -11,7 +11,10 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.agenticplayer.lifestyle.tool.LifestyleResponses.AirQualitySnapshot;
+import com.agenticplayer.lifestyle.tool.LifestyleResponses.AirQualityCheck;
+import com.agenticplayer.lifestyle.tool.LifestyleResponses.OutdoorChecklist;
 import com.agenticplayer.lifestyle.tool.LifestyleResponses.OutdoorSafetyBriefing;
+import com.agenticplayer.lifestyle.tool.LifestyleResponses.WeatherRiskCheck;
 import com.agenticplayer.lifestyle.tool.LifestyleResponses.WeatherSnapshot;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -98,6 +101,90 @@ public class OutdoorSafetyBriefingService {
                         "민감군(영유아, 고령자, 임산부, 호흡기·심혈관 질환자)은 더 보수적으로 판단하세요."),
                 List.of(
                         "Open-Meteo Geocoding API",
+                        "Open-Meteo Weather Forecast API",
+                        "Open-Meteo Air Quality API"));
+    }
+
+    public AirQualityCheck checkAirQuality(
+            String location,
+            Double latitude,
+            Double longitude,
+            String activity) {
+        OutdoorSafetyBriefing briefing = brief(location, latitude, longitude, activity);
+        String recommendation = switch (briefing.airQuality().grade()) {
+            case "나쁨" -> "대기질이 나쁜 편입니다. 장시간 야외활동은 줄이고, 민감군은 실내 활동을 권합니다.";
+            case "민감군 나쁨" -> "민감군은 야외활동을 줄이는 편이 좋습니다. 일반인은 활동 강도를 낮춰 주세요.";
+            case "보통" -> "대기질은 보통 수준입니다. 러닝·등원·장시간 산책은 마스크와 휴식 계획을 고려하세요.";
+            default -> "대기질은 좋은 편입니다. 다만 현지 상황은 출발 직전에 한 번 더 확인하세요.";
+        };
+
+        return new AirQualityCheck(
+                briefing.locationName(),
+                briefing.latitude(),
+                briefing.longitude(),
+                briefing.activity(),
+                briefing.airQuality(),
+                airQualityRiskLevel(briefing.airQuality()),
+                recommendation,
+                List.of("PM10 " + round(briefing.airQuality().pm10()) + "㎍/㎥, PM2.5 "
+                        + round(briefing.airQuality().pm25()) + "㎍/㎥, US AQI "
+                        + briefing.airQuality().usAqi() + "입니다."),
+                briefing.checklist().stream()
+                        .filter(item -> item.contains("마스크") || item.contains("야외활동") || item.contains("운동"))
+                        .toList(),
+                briefing.cautions(),
+                List.of("Open-Meteo Air Quality API"));
+    }
+
+    public WeatherRiskCheck checkWeatherRisks(
+            String location,
+            Double latitude,
+            Double longitude,
+            String activity) {
+        OutdoorSafetyBriefing briefing = brief(location, latitude, longitude, activity);
+        WeatherSnapshot weather = briefing.weather();
+        List<String> reasons = briefing.reasons().stream()
+                .filter(reason -> !reason.contains("대기질"))
+                .toList();
+        if (reasons.isEmpty()) {
+            reasons = List.of("강수, 자외선, 체감온도, 바람 수치에서 큰 주의 요인이 확인되지 않았습니다.");
+        }
+
+        int weatherSeverity = weatherSeverity(weather);
+        return new WeatherRiskCheck(
+                briefing.locationName(),
+                briefing.latitude(),
+                briefing.longitude(),
+                briefing.activity(),
+                weather,
+                label(weatherSeverity),
+                buildRecommendation(weatherSeverity, briefing.activity()),
+                reasons,
+                briefing.checklist().stream()
+                        .filter(item -> !item.contains("마스크") && !item.contains("야외활동 줄이기"))
+                        .toList(),
+                briefing.cautions(),
+                List.of("Open-Meteo Weather Forecast API"));
+    }
+
+    public OutdoorChecklist recommendChecklist(
+            String location,
+            Double latitude,
+            Double longitude,
+            String activity) {
+        OutdoorSafetyBriefing briefing = brief(location, latitude, longitude, activity);
+
+        return new OutdoorChecklist(
+                briefing.locationName(),
+                briefing.latitude(),
+                briefing.longitude(),
+                briefing.activity(),
+                briefing.riskLevel(),
+                briefing.checklist(),
+                briefing.reasons(),
+                briefing.activity() + " 준비물 체크리스트입니다. 위험 등급은 " + briefing.riskLevel()
+                        + "이며, 출발 전 현지 상황을 다시 확인하세요.",
+                List.of(
                         "Open-Meteo Weather Forecast API",
                         "Open-Meteo Air Quality API"));
     }
@@ -233,6 +320,33 @@ public class OutdoorSafetyBriefingService {
             return "보통";
         }
         return "좋음";
+    }
+
+    private String airQualityRiskLevel(AirQualitySnapshot airQuality) {
+        if ("나쁨".equals(airQuality.grade())) {
+            return "위험";
+        }
+        if ("민감군 나쁨".equals(airQuality.grade())) {
+            return "나쁨";
+        }
+        if ("보통".equals(airQuality.grade())) {
+            return "주의";
+        }
+        return "좋음";
+    }
+
+    private int weatherSeverity(WeatherSnapshot weather) {
+        int rainSeverity = weather.precipitationProbabilityPercent() >= 70 || weather.precipitationMm() >= 3 ? 2
+                : weather.precipitationProbabilityPercent() >= 40 || weather.precipitationMm() > 0 ? 1
+                : 0;
+        int uvSeverity = weather.uvIndex() >= 8 ? 2 : weather.uvIndex() >= 6 ? 1 : 0;
+        int heatColdSeverity = weather.apparentTemperatureCelsius() >= 35 ? 3
+                : weather.apparentTemperatureCelsius() >= 30 ? 2
+                : weather.apparentTemperatureCelsius() <= -10 ? 3
+                : weather.apparentTemperatureCelsius() <= 0 ? 2
+                : 0;
+        int windSeverity = weather.windSpeedKmh() >= 45 ? 2 : weather.windSpeedKmh() >= 30 ? 1 : 0;
+        return Math.max(Math.max(rainSeverity, uvSeverity), Math.max(heatColdSeverity, windSeverity));
     }
 
     private String label(int severity) {

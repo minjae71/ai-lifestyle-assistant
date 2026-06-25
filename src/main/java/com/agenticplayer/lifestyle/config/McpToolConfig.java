@@ -61,6 +61,9 @@ public class McpToolConfig {
     private String toolTitle(String toolName) {
         return switch (toolName) {
             case "brief_outdoor_safety" -> "외출 안전 브리핑";
+            case "check_air_quality" -> "대기질 확인";
+            case "check_weather_risks" -> "날씨 위험 확인";
+            case "recommend_outdoor_checklist" -> "외출 준비물 체크리스트";
             default -> toolName;
         };
     }

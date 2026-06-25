@@ -8,7 +8,8 @@
 - Stateless Streamable HTTP 방식과 `/mcp` 엔드포인트 사용
 - 서버명과 Tool Name에 금지어 `kakao` 미사용
 - Tool Name은 영문 소문자, 숫자와 underscore만 사용
-- 도구는 1개이며 외부 구조화 데이터 조회 목적을 명확히 함
+- 도구 4개로 권장 범위인 3~10개 충족
+- 각 도구는 종합 브리핑, 대기질 확인, 날씨 위험 확인, 활동별 체크리스트로 역할을 분리
 - 모든 도구에 `name`, `description`, `inputSchema`, `annotations` 제공
 - 모든 annotation에 `title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint` 지정
 - description마다 서비스 고유명사 `LifeMate(라이프메이트)` 병기

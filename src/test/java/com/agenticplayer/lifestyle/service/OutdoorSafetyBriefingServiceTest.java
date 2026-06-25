@@ -49,6 +49,47 @@ class OutdoorSafetyBriefingServiceTest {
         assertThat(result.reasons()).anyMatch(reason -> reason.contains("강수"));
     }
 
+    @Test
+    void checksAirQualitySeparately() {
+        var service = new OutdoorSafetyBriefingService(new FakeSafetyDataClient(
+                new SafetyMeasurements(24, 25, 55, 0, 10, 4, 8, 1, 70, 38, 110)));
+
+        var result = service.checkAirQuality("강남", null, null, "아이 등원");
+
+        assertThat(result.locationName()).isEqualTo("서울 강남구");
+        assertThat(result.airQuality().grade()).isEqualTo("민감군 나쁨");
+        assertThat(result.riskLevel()).isEqualTo("나쁨");
+        assertThat(result.recommendation()).contains("민감군");
+        assertThat(result.sources()).containsExactly("Open-Meteo Air Quality API");
+    }
+
+    @Test
+    void checksWeatherRisksSeparately() {
+        var service = new OutdoorSafetyBriefingService(new FakeSafetyDataClient(
+                new SafetyMeasurements(31, 34, 80, 2, 75, 8, 20, 61, 10, 5, 20)));
+
+        var result = service.checkWeatherRisks("제주", null, null, "빨래");
+
+        assertThat(result.locationName()).isEqualTo("제주");
+        assertThat(result.riskLevel()).isEqualTo("나쁨");
+        assertThat(result.reasons()).anyMatch(reason -> reason.contains("강수"));
+        assertThat(result.reasons()).anyMatch(reason -> reason.contains("자외선"));
+        assertThat(result.checklist()).anyMatch(item -> item.contains("우산"));
+    }
+
+    @Test
+    void recommendsChecklistForActivity() {
+        var service = new OutdoorSafetyBriefingService(new FakeSafetyDataClient(
+                new SafetyMeasurements(28, 30, 70, 0, 20, 5, 12, 2, 80, 40, 120)));
+
+        var result = service.recommendChecklist("마포구", null, null, "퇴근 후 러닝");
+
+        assertThat(result.activity()).isEqualTo("퇴근 후 러닝");
+        assertThat(result.summary()).contains("체크리스트");
+        assertThat(result.checklist()).anyMatch(item -> item.contains("마스크"));
+        assertThat(result.checklist()).anyMatch(item -> item.contains("운동"));
+    }
+
     private static final class FakeSafetyDataClient implements SafetyDataClient {
 
         private final SafetyMeasurements measurements;

@@ -86,3 +86,57 @@ Accept: application/json, text/event-stream
     }
   }
 }
+
+### 대기질 확인
+POST http://localhost:8080/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "check_air_quality",
+    "arguments": {
+      "location": "서울 강남구",
+      "activity": "아이 등원"
+    }
+  }
+}
+
+### 날씨 위험 확인
+POST http://localhost:8080/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "check_weather_risks",
+    "arguments": {
+      "location": "제주",
+      "activity": "빨래"
+    }
+  }
+}
+
+### 외출 준비물 체크리스트
+POST http://localhost:8080/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 8,
+  "method": "tools/call",
+  "params": {
+    "name": "recommend_outdoor_checklist",
+    "arguments": {
+      "location": "서울 마포구",
+      "activity": "퇴근 후 러닝"
+    }
+  }
+}
