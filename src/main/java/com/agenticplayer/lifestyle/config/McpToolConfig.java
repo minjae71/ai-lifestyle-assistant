@@ -60,10 +60,7 @@ public class McpToolConfig {
 
     private String toolTitle(String toolName) {
         return switch (toolName) {
-            case "suggest_meals_from_ingredients" -> "냉장고 재료로 메뉴 추천";
-            case "split_group_expenses" -> "모임 비용 정산";
-            case "guide_korean_life_event" -> "한국 경조사 가이드";
-            case "draft_message" -> "상황별 메시지 작성";
+            case "brief_outdoor_safety" -> "외출 안전 브리핑";
             default -> toolName;
         };
     }

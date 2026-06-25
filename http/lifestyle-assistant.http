@@ -33,7 +33,7 @@ Accept: application/json, text/event-stream
   "params": {}
 }
 
-### 냉장고 재료로 메뉴 추천
+### 외출 안전 브리핑 - 지역명으로 조회
 POST http://localhost:8080/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
@@ -43,16 +43,15 @@ Accept: application/json, text/event-stream
   "id": 3,
   "method": "tools/call",
   "params": {
-    "name": "suggest_meals_from_ingredients",
+    "name": "brief_outdoor_safety",
     "arguments": {
-      "ingredients": "계란, 밥, 대파",
-      "maxMinutes": 15,
-      "preference": "간단한"
+      "location": "서울 마포구",
+      "activity": "퇴근 후 러닝"
     }
   }
 }
 
-### 모임 비용 정산
+### 외출 안전 브리핑 - 좌표로 조회
 POST http://localhost:8080/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
@@ -62,15 +61,16 @@ Accept: application/json, text/event-stream
   "id": 4,
   "method": "tools/call",
   "params": {
-    "name": "split_group_expenses",
+    "name": "brief_outdoor_safety",
     "arguments": {
-      "participants": "민수, 영희, 철수",
-      "expenses": "민수 20000\n영희 30000\n철수 10000"
+      "latitude": 37.5665,
+      "longitude": 126.9780,
+      "activity": "아이 등원"
     }
   }
 }
 
-### 경조사 가이드
+### 외출 안전 브리핑 - 활동 생략
 POST http://localhost:8080/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
@@ -80,31 +80,9 @@ Accept: application/json, text/event-stream
   "id": 5,
   "method": "tools/call",
   "params": {
-    "name": "guide_korean_life_event",
+    "name": "brief_outdoor_safety",
     "arguments": {
-      "eventType": "결혼식",
-      "relationship": "회사 대리님",
-      "attending": true
-    }
-  }
-}
-
-### 상황별 메시지 초안
-POST http://localhost:8080/mcp
-Content-Type: application/json
-Accept: application/json, text/event-stream
-
-{
-  "jsonrpc": "2.0",
-  "id": 6,
-  "method": "tools/call",
-  "params": {
-    "name": "draft_message",
-    "arguments": {
-      "situation": "연차 재요청",
-      "recipient": "팀장님",
-      "tone": "정중한",
-      "keyPoints": "7월 3일 가족 일정으로 연차가 필요합니다"
+      "location": "부산 해운대"
     }
   }
 }

@@ -52,4 +52,37 @@ public final class LifestyleResponses {
             List<String> alternatives,
             List<String> editingTips) {
     }
+
+    public record OutdoorSafetyBriefing(
+            String locationName,
+            double latitude,
+            double longitude,
+            String activity,
+            String riskLevel,
+            String recommendation,
+            WeatherSnapshot weather,
+            AirQualitySnapshot airQuality,
+            List<String> reasons,
+            List<String> checklist,
+            List<String> cautions,
+            List<String> sources) {
+    }
+
+    public record WeatherSnapshot(
+            double temperatureCelsius,
+            double apparentTemperatureCelsius,
+            int humidityPercent,
+            double precipitationMm,
+            int precipitationProbabilityPercent,
+            double uvIndex,
+            double windSpeedKmh,
+            String weatherCodeDescription) {
+    }
+
+    public record AirQualitySnapshot(
+            double pm10,
+            double pm25,
+            int usAqi,
+            String grade) {
+    }
 }

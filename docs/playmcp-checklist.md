@@ -8,12 +8,12 @@
 - Stateless Streamable HTTP 방식과 `/mcp` 엔드포인트 사용
 - 서버명과 Tool Name에 금지어 `kakao` 미사용
 - Tool Name은 영문 소문자, 숫자와 underscore만 사용
-- 도구 4개로 권장 범위인 3~10개 충족
+- 도구는 1개이며 외부 구조화 데이터 조회 목적을 명확히 함
 - 모든 도구에 `name`, `description`, `inputSchema`, `annotations` 제공
 - 모든 annotation에 `title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint` 지정
 - description마다 서비스 고유명사 `LifeMate(라이프메이트)` 병기
 - description은 1,024자 이내이며 한국어로 간결하게 작성
-- 외부 API 원문 대신 필요한 필드만 담은 작은 결과 모델 반환
+- Open-Meteo 외부 API 원문 대신 필요한 필드만 담은 작은 결과 모델 반환
 - 사용자 인증과 개인정보 저장 없음
 - 광고 노출이나 광고 클릭 유도 없음
 
@@ -21,5 +21,5 @@
 
 - 공개 HTTPS 도메인으로 배포
 - MCP Inspector로 초기화, 도구 목록과 도구 호출 점검
-- 평균 응답 100ms 이내, p99 3초 이내 부하 테스트
+- 외부 API 호출 지연을 고려해 평균 응답과 p99 응답 시간 점검
 - PlayMCP 개발자 콘솔의 MCP 식별자와 서비스명 확정
